@@ -4,46 +4,29 @@ FROM node:16
 # Set working directory
 WORKDIR /app
 
-# Copy package.json, pnpm-lock.yaml and other files into the working directory
+# Copy package.json and pnpm-lock.yaml to the working directory
 COPY package.json pnpm-lock.yaml ./
 
-# Install dependencies using pnpm
+# Install pnpm globally and dependencies (including Puppeteer's Chromium)
 RUN npm install -g pnpm && pnpm install
 
-# Copy the rest of the application code into the working directory
-COPY . .
-
-# Install Puppeteer dependencies (Chromium)
-RUN apt-get update && apt-get install -y \
-    gconf-service \
-    libxss1 \
-    wget \
-    ca-certificates \
-    fonts-liberation \
-    libappindicator3-1 \
-    libasound2 \
-    libatk-bridge2.0-0 \
-    libatk1.0-0 \
-    libcups2 \
-    libdbus-1-3 \
-    libdrm2 \
-    libgbm1 \
-    libgtk-3-0 \
-    libnspr4 \
-    libnss3 \
-    libxcomposite1 \
-    libxdamage1 \
-    libxrandr2 \
-    xdg-utils \
-    --no-install-recommends && \
+# Install Google Chrome manually
+RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - && \
+    echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list && \
+    apt-get update && apt-get install -y google-chrome-stable && \
     rm -rf /var/lib/apt/lists/*
 
-# Expose the port the app runs on
+# Set the Puppeteer executable path to the installed Google Chrome
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
+
+# Ensure Puppeteer uses the right cache directory
+ENV PUPPETEER_CACHE_DIR=/app/.cache/puppeteer
+
+# Expose the application's port
 EXPOSE 1000
 
-# Set the environment variable for Puppeteer
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
+# Copy the remaining application files to the working directory
+COPY . .
 
 # Start the application
 CMD ["pnpm", "start"]
