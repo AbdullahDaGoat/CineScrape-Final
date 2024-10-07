@@ -1,11 +1,11 @@
 const axios = require('axios');
 const puppeteer = require('puppeteer-extra');
-const StealthPlugin = require('puppeteer-extra-plugin-stealth');
+const stealth = require('puppeteer-extra-plugin-stealth');
 const winston = require('winston');
 const https = require('https');
 const express = require('express');
 
-puppeteer.use(StealthPlugin());
+puppeteer.use(stealth());
 
 // TMDB API key (replace with your key)
 const tmdbApiKey = '5b9790d9305dca8713b9a0afad42ea8d';
@@ -260,7 +260,7 @@ function formatResponse(data) {
 
 // Set up Express server
 const app = express();
-const port = 5000;
+const port = 1000;
 
 app.get('/:tmdbid', async (req, res) => {
     const tmdbId = req.params.tmdbid;
@@ -289,6 +289,6 @@ app.get('/:tmdbid', async (req, res) => {
     }
 });
 
-app.listen(port, () => {
+app.listen('0.0.0.0', port, () => {
     console.log(`Server is running at http://localhost:${port}`);
 });

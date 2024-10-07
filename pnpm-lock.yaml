@@ -8,9 +8,6 @@ importers:
 
   .:
     dependencies:
-      '@types/express':
-        specifier: ^5.0.0
-        version: 5.0.0
       axios:
         specifier: ^1.7.7
         version: 1.7.7
@@ -35,6 +32,10 @@ importers:
       yolo:
         specifier: 'file:'
         version: file:(puppeteer-core@23.5.0)
+    devDependencies:
+      '@types/express':
+        specifier: ^5.0.0
+        version: 5.0.0
 
 packages:
 
@@ -2170,7 +2171,6 @@ snapshots:
 
   yolo@file:(puppeteer-core@23.5.0):
     dependencies:
-      '@types/express': 5.0.0
       axios: 1.7.7
       express: 4.21.0
       https: 1.0.0

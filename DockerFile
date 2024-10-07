@@ -1,0 +1,46 @@
+# Use Node.js as a base image
+FROM node:18
+
+# Set the working directory
+WORKDIR /app
+
+# Copy package.json and pnpm-lock.yaml files to the container
+COPY package.json pnpm-lock.yaml ./
+
+# Install pnpm globally
+RUN npm install -g pnpm
+
+# Install dependencies
+RUN pnpm install
+
+# Install necessary libraries for Puppeteer
+RUN apt-get update && \
+    apt-get install -y wget gnupg && \
+    apt-get install -y \
+      libnss3 \
+      libxss1 \
+      libasound2 \
+      libatk1.0-0 \
+      libatk-bridge2.0-0 \
+      libcups2 \
+      libxkbcommon-x11-0 \
+      libgbm1 \
+      && rm -rf /var/lib/apt/lists/*
+
+# Copy the entire app to the working directory
+COPY . .
+
+# Expose the port that the app runs on
+EXPOSE 1000
+
+# Set environment variable for Puppeteer to skip installing Chromium
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+
+# Install Chromium for Puppeteer
+RUN apt-get update && apt-get install -y chromium && apt-get clean
+
+# Set the Puppeteer executable path to Chromium
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+
+# Start the server
+CMD ["pnpm", "start"]
