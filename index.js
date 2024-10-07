@@ -22,8 +22,6 @@ const logger = winston.createLogger({
     ],
 });
 
-const executablePath = '/opt/render/.cache/puppeteer/chrome-linux/chrome';
-
 // Random IPv4 generator
 function getRandomIPv4() {
     return `${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}`;
@@ -82,7 +80,6 @@ async function getIMDBIdFromTMDB(tmdbId) {
 // Function to extract the unique ID from the share link using Puppeteer
 async function fetchUniqueIdFromShareLink(tid) {
     const browser = await puppeteer.launch({ 
-        executablePath,
         headless: true,
         args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
@@ -125,7 +122,6 @@ async function fetchUniqueIdFromShareLink(tid) {
 // Function to fetch file details from Febbox
 async function fetchFileDetails(uniqueId) {
     const browser = await puppeteer.launch({
-        executablePath,
         headless: true,
         args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
@@ -160,7 +156,6 @@ async function downloadFileWithPost(uniqueId, fid) {
     try {
         console.log('Launching browser...');
         browser = await puppeteer.launch({
-            executablePath,
             headless: true,
             args: ['--no-sandbox', '--disable-setuid-sandbox']
         });
