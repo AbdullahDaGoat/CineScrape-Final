@@ -23,7 +23,6 @@ RUN apt-get update && \
     libfontconfig1 \
     libgcc1 \
     libglib2.0-0 \
-    libgobject-2.0-0 \
     libgdk-pixbuf2.0-0 \
     libgtk-3-0 \
     libnspr4 \
