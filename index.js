@@ -4,6 +4,8 @@ const stealth = require('puppeteer-extra-plugin-stealth');
 const winston = require('winston');
 const https = require('https');
 const express = require('express');
+const cors = require('cors'); // Import the cors middleware
+
 
 puppeteer.use(stealth());
 
@@ -264,6 +266,8 @@ function formatResponse(data) {
 // Set up Express server
 const app = express();
 const port = process.env.PORT || 1000;
+app.use(cors());
+
 
 app.get('/:tmdbid', async (req, res) => {
     const tmdbId = req.params.tmdbid;
