@@ -2,9 +2,7 @@ services:
   - name: puppeteer-service
     type: web
     plan: free
-    runtime: docker # Specify "docker" as the runtime since you’re using a Dockerfile
-    buildCommand: "" # Leave this blank as Dockerfile specifies the build process
-    startCommand: "" # Leave this blank as Dockerfile specifies the start command
+    runtime: docker # Specify "docker" as the runtime since you're using a Dockerfile
     envVars:
       - key: NODE_ENV
         value: production

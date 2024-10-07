@@ -1,5 +1,49 @@
 # Use the official Node.js image as the base image
-FROM node:16
+FROM node:16-bullseye-slim
+
+# Install dependencies
+RUN apt-get update \
+    && apt-get install -y wget gnupg ca-certificates \
+    && apt-get install -y --no-install-recommends \
+    fonts-liberation \
+    libasound2 \
+    libatk-bridge2.0-0 \
+    libatk1.0-0 \
+    libc6 \
+    libcairo2 \
+    libcups2 \
+    libdbus-1-3 \
+    libexpat1 \
+    libfontconfig1 \
+    libgcc1 \
+    libglib2.0-0 \
+    libgobject-2.0-0 \
+    libgdk-pixbuf2.0-0 \
+    libgtk-3-0 \
+    libnspr4 \
+    libnss3 \
+    libpango-1.0-0 \
+    libx11-6 \
+    libxcb1 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxext6 \
+    libxfixes3 \
+    libxi6 \
+    libxrandr2 \
+    libxrender1 \
+    libxss1 \
+    libxtst6 \
+    libu2f-udev \
+    xdg-utils \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Chromium
+RUN apt-get update && apt-get install -y chromium
+
+# Set the CHROME_BIN environment variable
+ENV CHROME_BIN=/usr/bin/chromium
 
 # Set working directory
 WORKDIR /app
@@ -10,19 +54,14 @@ COPY package.json pnpm-lock.yaml ./
 # Install pnpm globally
 RUN npm install -g pnpm
 
-# Set Puppeteer cache and executable paths
-ENV PUPPETEER_CACHE_DIR=/opt/render/.cache/puppeteer
-ENV PUPPETEER_DOWNLOAD_PATH=/opt/render/.cache/puppeteer
-ENV PUPPETEER_EXECUTABLE_PATH=/opt/render/.cache/puppeteer/chrome-linux/chrome
-
-# Install dependencies and download Chromium
-RUN pnpm install && npx puppeteer install browsers --path=$PUPPETEER_DOWNLOAD_PATH
-
-# Expose the application's port
-EXPOSE 1000
+# Install dependencies
+RUN pnpm install
 
 # Copy the remaining application files to the working directory
 COPY . .
+
+# Expose the application's port
+EXPOSE 1000
 
 # Start the application
 CMD ["pnpm", "start"]

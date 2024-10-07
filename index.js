@@ -81,6 +81,7 @@ async function getIMDBIdFromTMDB(tmdbId) {
 async function fetchUniqueIdFromShareLink(tid) {
     const browser = await puppeteer.launch({ 
         headless: true,
+        executablePath: process.env.CHROME_BIN || null,
         args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
     const page = await browser.newPage();
@@ -123,6 +124,7 @@ async function fetchUniqueIdFromShareLink(tid) {
 async function fetchFileDetails(uniqueId) {
     const browser = await puppeteer.launch({
         headless: true,
+        executablePath: process.env.CHROME_BIN || null,
         args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
     const page = await browser.newPage();
@@ -157,6 +159,7 @@ async function downloadFileWithPost(uniqueId, fid) {
         console.log('Launching browser...');
         browser = await puppeteer.launch({
             headless: true,
+            executablePath: process.env.CHROME_BIN || null,
             args: ['--no-sandbox', '--disable-setuid-sandbox']
         });
         
