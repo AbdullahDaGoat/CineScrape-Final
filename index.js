@@ -289,6 +289,6 @@ app.get('/:tmdbid', async (req, res) => {
     }
 });
 
-app.listen('0.0.0.0', port, () => {
+app.listen(port, '0.0.0.0', () => {
     console.log(`Server is running at http://localhost:${port}`);
 });
