@@ -22,7 +22,7 @@ const logger = winston.createLogger({
     ],
 });
 
-const executablePath = process.env.PUPPETEER_EXECUTABLE_PATH || '/opt/render/.cache/puppeteer/chrome-linux/chrome';
+const executablePath = '/opt/render/.cache/puppeteer/chrome-linux/chrome';
 
 // Random IPv4 generator
 function getRandomIPv4() {

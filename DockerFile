@@ -7,15 +7,16 @@ WORKDIR /app
 # Copy package.json and pnpm-lock.yaml to the working directory
 COPY package.json pnpm-lock.yaml ./
 
-# Install pnpm globally and install all dependencies, including puppeteer-extra
-RUN npm install -g pnpm && pnpm install
+# Install pnpm globally
+RUN npm install -g pnpm
 
-# Ensure Chromium installs to the expected directory
+# Set Puppeteer cache and executable paths
 ENV PUPPETEER_CACHE_DIR=/opt/render/.cache/puppeteer
+ENV PUPPETEER_DOWNLOAD_PATH=/opt/render/.cache/puppeteer
 ENV PUPPETEER_EXECUTABLE_PATH=/opt/render/.cache/puppeteer/chrome-linux/chrome
 
-# Run Puppeteer's install command for the necessary Chromium version
-RUN npx puppeteer install chrome
+# Install dependencies and download Chromium
+RUN pnpm install && npx puppeteer install --path=$PUPPETEER_DOWNLOAD_PATH
 
 # Expose the application's port
 EXPOSE 1000
