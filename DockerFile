@@ -1,13 +1,7 @@
 # Use the official Node.js image as the base image
-FROM node:18
+FROM node:18-bullseye-slim
 
-# Set working directory
-WORKDIR /app
-
-# Copy package.json and pnpm-lock.yaml to the working directory
-COPY package.json pnpm-lock.yaml ./
-
-# Install dependencies for Puppeteer
+# Install dependencies for Puppeteer and Chromium
 RUN apt-get update && \
     apt-get install -y wget gnupg ca-certificates && \
     apt-get install -y --no-install-recommends \
@@ -41,24 +35,29 @@ RUN apt-get update && \
     libxtst6 \
     libu2f-udev \
     xdg-utils \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    chromium \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Set the CHROME_BIN environment variable
+ENV CHROME_BIN=/usr/bin/chromium
+
+# Set working directory
+WORKDIR /app
+
+# Copy package.json and pnpm-lock.yaml to the working directory
+COPY package.json pnpm-lock.yaml ./
 
 # Install pnpm globally
 RUN npm install -g pnpm
 
+# Copy the remaining application files to the working directory
+COPY . .
+
 # Install dependencies using pnpm
 RUN pnpm install
 
-# Set Puppeteer to use its default cache directory and download Chromium
-ENV PUPPETEER_CACHE_DIR=/opt/render/.cache/puppeteer
-ENV PUPPETEER_EXECUTABLE_PATH=/opt/render/.cache/puppeteer/chrome-linux/chrome
-
 # Expose the application's port
 EXPOSE 1000
-
-# Copy the remaining application files to the working directory
-COPY . .
 
 # Start the application
 CMD ["pnpm", "start"]
