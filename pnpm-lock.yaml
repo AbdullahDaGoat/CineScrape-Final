@@ -29,9 +29,6 @@ importers:
       winston:
         specifier: ^3.15.0
         version: 3.15.0
-      yolo:
-        specifier: 'file:'
-        version: file:(puppeteer-core@23.5.0)
     devDependencies:
       '@types/express':
         specifier: ^5.0.0
@@ -1057,9 +1054,6 @@ packages:
 
   yauzl@2.10.0:
     resolution: {integrity: sha512-p4a9I6X6nu6IhoGmBqAcbJy1mlC4j27vEPZX9F4L4/vZT3Lyq1VkFHw/V/PUcB9Buo+DG3iHkT0x3Qya58zc3g==}
-
-  'yolo@file:':
-    resolution: {directory: '', type: directory}
 
   zod@3.23.8:
     resolution: {integrity: sha512-XBx9AXhXktjUqnepgTiE5flcKIYWi/rme0Eaj+5Y0lftuGBq+jyRu/md4WnuxqgP1ubdpNCsYEYPxrzVHD8d6g==}
@@ -2168,24 +2162,5 @@ snapshots:
     dependencies:
       buffer-crc32: 0.2.13
       fd-slicer: 1.1.0
-
-  yolo@file:(puppeteer-core@23.5.0):
-    dependencies:
-      axios: 1.7.7
-      express: 4.21.0
-      https: 1.0.0
-      puppeteer: 23.5.0
-      puppeteer-extra: 3.3.6(puppeteer-core@23.5.0)(puppeteer@23.5.0)
-      puppeteer-extra-plugin-stealth: 2.11.2(puppeteer-extra@3.3.6(puppeteer-core@23.5.0)(puppeteer@23.5.0))
-      winston: 3.15.0
-    transitivePeerDependencies:
-      - '@types/puppeteer'
-      - bufferutil
-      - debug
-      - playwright-extra
-      - puppeteer-core
-      - supports-color
-      - typescript
-      - utf-8-validate
 
   zod@3.23.8: {}

@@ -1,0 +1,12 @@
+services:
+  - name: puppeteer-service
+    type: web
+    plan: free
+    runtime: node # Adding required "runtime" property
+    buildCommand: "pnpm install"
+    startCommand: "pnpm start"
+    envVars:
+      - key: NODE_ENV
+        value: production
+    dockerfilePath: ./Dockerfile
+    autoDeploy: true
