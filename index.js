@@ -6,7 +6,7 @@ const https = require('https');
 const express = require('express');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
-const PQueue = require('p-queue');
+
 
 puppeteer.use(stealth());
 
@@ -31,9 +31,6 @@ const limiter = rateLimit({
     max: 100, // 100 requests per windowMs
     message: { error: 'Too many requests, please try again later.' }
 });
-
-// Queue Setup - 1 concurrent request at a time
-const queue = new PQueue({ concurrency: 1 });
 
 // Random IPv4 generator
 function getRandomIPv4() {
@@ -282,6 +279,12 @@ app.use(limiter); // Apply rate limiter globally
 // Queue each request
 app.get('/:tmdbid', async (req, res) => {
     const tmdbId = req.params.tmdbid;
+
+    // Import p-queue dynamically within the route handler
+    const { default: PQueue } = await import('p-queue');
+
+    // Initialize queue with concurrency of 1
+    const queue = new PQueue({ concurrency: 1 });
 
     // Add the request to the queue and process sequentially
     queue.add(async () => {
