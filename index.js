@@ -4,8 +4,9 @@ const stealth = require('puppeteer-extra-plugin-stealth');
 const winston = require('winston');
 const https = require('https');
 const express = require('express');
-const cors = require('cors'); // Import the cors middleware
-
+const cors = require('cors');
+const rateLimit = require('express-rate-limit');
+const PQueue = require('p-queue');
 
 puppeteer.use(stealth());
 
@@ -23,6 +24,16 @@ const logger = winston.createLogger({
         new winston.transports.Console()
     ],
 });
+
+// Rate Limiter - Limit to 100 requests per minute
+const limiter = rateLimit({
+    windowMs: 1 * 60 * 1000, // 1 minute
+    max: 100, // 100 requests per windowMs
+    message: { error: 'Too many requests, please try again later.' }
+});
+
+// Queue Setup - 1 concurrent request at a time
+const queue = new PQueue({ concurrency: 1 });
 
 // Random IPv4 generator
 function getRandomIPv4() {
@@ -263,37 +274,40 @@ function formatResponse(data) {
     return responseJson; // Return the object instead of a string
 }
 
-// Set up Express server
 const app = express();
 const port = process.env.PORT || 1000;
 app.use(cors());
+app.use(limiter); // Apply rate limiter globally
 
-
+// Queue each request
 app.get('/:tmdbid', async (req, res) => {
     const tmdbId = req.params.tmdbid;
-    try {
-        const { imdbId, title } = await getIMDBIdFromTMDB(tmdbId);
-        console.log('IMDb ID:', imdbId);
-        const tid = await fetchDataTidFromAPI(title, imdbId);
-        console.log('TID:', tid);
-        const uniqueId = await fetchUniqueIdFromShareLink(tid);
-        console.log('Unique ID:', uniqueId);
-        const fid = await fetchFileDetails(uniqueId);
-        console.log('File ID:', fid);
-        const postResponse = await downloadFileWithPost(uniqueId, fid);
 
-        // Format the response
-        const formattedResponse = formatResponse({
-            fileId: fid,
-            postResponse: postResponse
-        });
+    // Add the request to the queue and process sequentially
+    queue.add(async () => {
+        try {
+            const { imdbId, title } = await getIMDBIdFromTMDB(tmdbId);
+            console.log('IMDb ID:', imdbId);
+            const tid = await fetchDataTidFromAPI(title, imdbId);
+            console.log('TID:', tid);
+            const uniqueId = await fetchUniqueIdFromShareLink(tid);
+            console.log('Unique ID:', uniqueId);
+            const fid = await fetchFileDetails(uniqueId);
+            console.log('File ID:', fid);
+            const postResponse = await downloadFileWithPost(uniqueId, fid);
 
-        // Send the formatted JSON response
-        res.json(formattedResponse); // Use res.json() to send JSON response
-    } catch (error) {
-        console.error('Error in processing:', error.message);
-        res.status(500).json({ error: error.message }); // Send error as JSON
-    }
+            // Format the response
+            const formattedResponse = formatResponse({
+                fileId: fid,
+                postResponse: postResponse
+            });
+
+            res.json(formattedResponse);
+        } catch (error) {
+            console.error('Error in processing:', error.message);
+            res.status(500).json({ error: error.message });
+        }
+    });
 });
 
 app.listen(port, '0.0.0.0', () => {
