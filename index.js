@@ -185,34 +185,40 @@ const proxies =
     "https://dev--inspiring-begonia-6d2cbd.netlify.app/",
     "https://mellifluous-tanuki-fa701e.netlify.app/",
     "https://dainty-jalebi-2ca016.netlify.app/"
-]
+];
 
-
+// Corrected getRandomProxy function
 function getRandomProxy() {
-    const proxyUrls = Object.keys(proxies);
-    return proxyUrls[Math.floor(Math.random() * proxyUrls.length)];
+    return proxies[Math.floor(Math.random() * proxies.length)];
 }
 
-// Encryption key for AES-256
-const ENCRYPTION_KEY = '7f8d4a5954419824ea70b60d25115a4a3ada34dd0af2f473ace6147ed4dfce6b'; // 32 bytes
+// Encryption key for AES-256 (ensure it's 32 bytes)
+const ENCRYPTION_KEY = '7f8d4a5954419824ea70b60d25115a4a3ada34dd0af2f473ace6147ed4dfce6b'; // 64 hex characters = 32 bytes
 
 // URL encryption and compression
-function compressAndEncrypt(text) {
+
+  function compressAndEncrypt(text) {
     const buffer = Buffer.from(text);
-    const compressed = zlib.deflateSync(buffer);
+    const compressed = zlib.deflateSync(buffer); // Compress the data first
     const iv = crypto.randomBytes(16);
     const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY, 'hex'), iv);
-    let encrypted = cipher.update(compressed);
+    let encrypted = cipher.update(compressed); // Encrypt the compressed data
     encrypted = Buffer.concat([encrypted, cipher.final()]);
     return `${iv.toString('base64')}:${encrypted.toString('base64')}`;
-}
+  }
 
-function encryptUrl(url) {
-    url = url.replace(/&KEY3=[^&]*/g, '').replace(/&KEY4=[^&]*/g, '').replace(/&KEY5=[^&]*/g, '');
+  function encryptUrl(url) {
+    // Remove specific query parameters
+    url = url
+      .replace(/&KEY3=[^&]*/g, '')
+      .replace(/&KEY4=[^&]*/g, '')
+      .replace(/&KEY5=[^&]*/g, '');
     const compressedEncrypted = compressAndEncrypt(url);
     const base64Encoded = Buffer.from(compressedEncrypted).toString('base64');
-    return `https://mp4.whvx.net/mp4/${base64Encoded}`;
-}
+    const encryptedUrl = `https://mp4.whvx.net/mp4/${base64Encoded}`;
+    return encryptedUrl;
+  }
+  
 
 // TMDB API key (replace with your key)
 const tmdbApiKey = '5b9790d9305dca8713b9a0afad42ea8d';
@@ -261,7 +267,7 @@ async function fetchDataTidFromAPI(title, imdbId) {
     const url = `${movieboxBase}/api/api/index.html?child_mode=0&srchtxt=${encodeURIComponent(title)}&srchmod=42&page=1&page_size=50&filter=&srchsort=&qf=1&language=en`;
 
     try {
-        const response = await axios.get(url, { headers: movieboxHeaders }, agent);
+        const response = await axios.get(url, { headers: movieboxHeaders }, { httpsAgent: agent });
         const data = response.data;
 
         if (data.success && data.data && data.data.docs) {
@@ -270,6 +276,7 @@ async function fetchDataTidFromAPI(title, imdbId) {
                 return matchingDoc.solr_gid; // Return solr_gid (TID)
             }
         }
+        throw new Error('No matching TID found.');
     } catch (error) {
         logger.error(`Error fetching data TID: ${error.message}`);
         throw new Error('Failed to fetch data TID: ' + error.message);
@@ -302,7 +309,6 @@ async function fetchUniqueIdFromShareLink(tid) {
 
     // Set user-agent to mimic the mobile browser
     await page.setUserAgent('Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Mobile Safari/537.36');
-
 
     const destinationUrl = `https://www.showbox.media/`;
     await page.goto(destinationUrl, { waitUntil: 'networkidle0' });
@@ -346,9 +352,9 @@ async function fetchFileDetails(uniqueId) {
     const page = await browser.newPage();
 
     try {
-        // Navigate to the share info page
+        // Navigate to the share info page using a random proxy
         const proxy = getRandomProxy();
-        const url = `https://www.febbox.com/file/share_info?key=${uniqueId}`
+        const url = `https://www.febbox.com/file/share_info?key=${uniqueId}`;
         const proxiedUrl = `${proxy}?destination=${encodeURIComponent(url)}`;
         await page.goto(proxiedUrl, { waitUntil: 'networkidle0' });
 
@@ -371,7 +377,7 @@ async function fetchFileDetails(uniqueId) {
     }
 }
 
-
+// Function to download file with POST request using Puppeteer
 async function downloadFileWithPost(uniqueId, fid) {
     let browser, page;
     try {
@@ -391,18 +397,19 @@ async function downloadFileWithPost(uniqueId, fid) {
 
         // Set cookies for the Febbox session
         const cookies = [
-            { name: 'ui', value: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MjgzNjM2NjgsIm5iZiI6MTcyODM2MzY2OCwiZXhwIjoxNzU5NDY3Njg4LCJkYXRhIjp7InVpZCI6NDY0NzUzLCJ0b2tlbiI6IjRhMWQzYmFmMGFjNWNhYTIyNDMzYjBiMmU0NzcxZjYxIn19.sGoXoIwOZfAyL6WHcRh34cA9hiwaYobmEg99FARe1fM', domain: 'www.febbox.com' },
+            { 
+                name: 'ui', 
+                value: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MjgzNjM2NjgsIm5iZiI6MTcyODM2MzY2OCwiZXhwIjoxNzU5NDY3Njg4LCJkYXRhIjp7InVpZCI6NDY0NzUzLCJ0b2tlbiI6IjRhMWQzYmFmMGFjNWNhYTIyNDMzYjBiMmU0NzcxZjYxIn19.sGoXoIwOZfAyL6WHcRh34cA9hiwaYobmEg99FARe1fM', 
+                domain: 'www.febbox.com' 
+            },
         ];
 
         console.log('Setting cookies...');
         await page.setCookie(...cookies);
 
-
-        const proxy = getRandomProxy();
-        const proxiedUrl = `${proxy}?destination=${encodeURIComponent(destinationUrl)}`;
         const destinationUrl = `https://www.febbox.com/file/share_info?key=${uniqueId}`;
 
-        await page.goto(proxiedUrl, { waitUntil: 'networkidle0' });
+        await page.goto(destinationUrl, { waitUntil: 'networkidle0' });
 
         // Execute the POST request in the page context using page.evaluate
         console.log('Executing POST request...');
@@ -457,16 +464,37 @@ async function downloadFileWithPost(uniqueId, fid) {
         }
     }
 }
+
+// Function to process and encrypt URLs in the movie data
+// function processMovieData(movieData) {
+//     if (movieData && movieData.data && Array.isArray(movieData.data)) {
+//         movieData.data.forEach(movie => {
+//             if (movie.quality_list && Array.isArray(movie.quality_list)) {
+//                 movie.quality_list.forEach(quality => {
+//                     if (quality.download_url) {
+//                         quality.download_url = encryptUrl(quality.download_url);
+//                     }
+//                 });
+//             }
+//             // Optionally, encrypt the main download_url as well
+//             if (movie.download_url) {
+//                 movie.download_url = encryptUrl(movie.download_url);
+//             }
+//         });
+//     }
+//     return movieData;
+// }
+
 const app = express();
 const port = process.env.PORT || 1000;
 app.use(cors());
 app.use(limiter); // Apply rate limiter globally
 
+
 // Queue each request
 app.get('/movie/:tmdbid', async (req, res) => {
     const tmdbId = req.params.tmdbid;
 
-    // Import p-queue dynamically within the route handler
     const { default: PQueue } = await import('p-queue');
 
     // Initialize queue with concurrency of 1
@@ -475,21 +503,36 @@ app.get('/movie/:tmdbid', async (req, res) => {
     // Add the request to the queue and process sequentially
     queue.add(async () => {
         try {
+            // Step 1: Get IMDb ID and Title from TMDB
             const { imdbId, title } = await getIMDBIdFromTMDB(tmdbId);
             console.log('IMDb ID:', imdbId);
+            console.log('Title:', title);
+
+            // Step 2: Fetch TID using Title and IMDb ID
             const tid = await fetchDataTidFromAPI(title, imdbId);
-            console.log('TID:', tid);
+
+            // Step 3: Fetch Unique ID from Share Link
             const uniqueId = await fetchUniqueIdFromShareLink(tid);
-            console.log('Unique ID:', uniqueId);
+
+            // Step 4: Fetch File ID (fid) from Febbox
             const fid = await fetchFileDetails(uniqueId);
-            console.log('File ID:', fid);
+
+            // Step 5: Download File with POST request
             const postResponse = await downloadFileWithPost(uniqueId, fid);
 
+            // Assuming postResponse is in the Cinescrape format
+            // Encrypt the URLs in the response data
+            // const encryptedMovieData = processMovieData(postResponse);
+
+            // Send the encrypted movie data back as a response
             res.json(postResponse);
         } catch (error) {
             console.error('Error in processing:', error.message);
             res.status(500).json({ error: error.message });
         }
+    }).catch(err => {
+        console.error('Queue error:', err);
+        res.status(500).json({ error: 'Internal server error.' });
     });
 });
 

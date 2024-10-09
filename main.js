@@ -73,27 +73,7 @@ function extractQualityFromFilename(filename) {
   return null;
 }
 
-function encryptUrl(url) {
-  // Remove specific query parameters
-  url = url
-    .replace(/&KEY3=[^&]*/g, '')
-    .replace(/&KEY4=[^&]*/g, '')
-    .replace(/&KEY5=[^&]*/g, '');
-  const compressedEncrypted = compressAndEncrypt(url);
-  const base64Encoded = Buffer.from(compressedEncrypted).toString('base64');
-  const encryptedUrl = `https://mp4.whvx.net/mp4/${base64Encoded}`;
-  return encryptedUrl;
-}
 
-function compressAndEncrypt(text) {
-  const buffer = Buffer.from(text);
-  const compressed = zlib.deflateSync(buffer); // Compress the data first
-  const iv = crypto.randomBytes(16);
-  const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY, 'hex'), iv);
-  let encrypted = cipher.update(compressed); // Encrypt the compressed data
-  encrypted = Buffer.concat([encrypted, cipher.final()]);
-  return `${iv.toString('base64')}:${encrypted.toString('base64')}`;
-}
 
 async function getSeasonDataId(proxy, id, season, febboxHeaders) {
   try {
