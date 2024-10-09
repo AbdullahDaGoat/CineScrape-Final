@@ -182,19 +182,21 @@ async function downloadFileWithPost(uniqueId, fid) {
 
         // Set cookies for the Febbox session
         const cookies = [
-            { name: 'ui', value: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MjczOTc3MjgsIm5iZiI6MTcyNzM5NzcyOCwiZXhwIjoxNzU4NTAxNzQ4LCJkYXRhIjp7InVpZCI6NDY0NzUzLCJ0b2tlbiI6IjU3YjFkN2E3NGJjZTZmNWVkM2Q2MzdkNTc1NTI5ZDdiIn19.ZeqsJc3efUuEE9PcX-a6nZbwySY5n8Me5hUgaT1qB6w', domain: 'www.febbox.com' },
+            { name: 'ui', value: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MjgzNjM2NjgsIm5iZiI6MTcyODM2MzY2OCwiZXhwIjoxNzU5NDY3Njg4LCJkYXRhIjp7InVpZCI6NDY0NzUzLCJ0b2tlbiI6IjRhMWQzYmFmMGFjNWNhYTIyNDMzYjBiMmU0NzcxZjYxIn19.sGoXoIwOZfAyL6WHcRh34cA9hiwaYobmEg99FARe1fM', domain: 'www.febbox.com' },
         ];
 
         console.log('Setting cookies...');
         await page.setCookie(...cookies);
 
-        await page.goto(`https://www.febbox.com/file/share_info?key=${uniqueId}`, { waitUntil: 'networkidle0' });
+        const destinationUrl = `https://www.febbox.com/file/share_info?key=${uniqueId}`;
 
-        // Execute the POST request in the same page context using page.evaluate
+        await page.goto(destinationUrl, { waitUntil: 'networkidle0' });
+
+        // Execute the POST request in the page context using page.evaluate
         console.log('Executing POST request...');
         const postResponse = await page.evaluate(async ({ fid, uniqueId }) => {
             try {
-                const result = await fetch('/file/player', {
+                const result = await fetch(`/file/file_download`, { 
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
@@ -227,7 +229,7 @@ async function downloadFileWithPost(uniqueId, fid) {
                 console.error('Error during POST request evaluation:', error);
                 return { error: `POST request failed: ${error.message}` };
             }
-        }, { fid, uniqueId });        
+        }, { fid, uniqueId }); 
 
         return postResponse; // Return the response
     } catch (error) {
@@ -241,14 +243,14 @@ async function downloadFileWithPost(uniqueId, fid) {
     }
 }
 
-
 function formatResponse(data) {
     let responseJson = {
         fileId: data.fileId,
         videoSources: []
     };
 
-    if (data.postResponse && data.postResponse.indexOf('var sources =') !== -1) {
+    // Check if postResponse is a string and contains 'var sources ='
+    if (typeof data.postResponse === 'string' && data.postResponse.indexOf('var sources =') !== -1) {
         let sourcesMatch = data.postResponse.match(/var sources = (\[.*?\]);/s);
         if (sourcesMatch && sourcesMatch[1]) {
             let sources;
@@ -266,6 +268,9 @@ function formatResponse(data) {
                 console.error('Error parsing sources:', e);
             }
         }
+    } else {
+        console.error('postResponse is not a string or does not contain "var sources ="');
+        return data 
     }
 
     return responseJson; // Return the object instead of a string
