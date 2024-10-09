@@ -199,12 +199,15 @@ async function downloadFileWithPost(uniqueId, fid) {
                 const result = await fetch(`/file/file_download`, { 
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                        'Accept': 'application/json, text/javascript, */*; q=0.01',
                         'Accept-Encoding': 'gzip, deflate, br, zstd',
                         'Accept-Language': 'en-US,en;q=0.9',
-                        'Content-Length': '30',
+                        'Cache-Control': 'no-cache',
+                        'Content-Length': '31',
+                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
                         'DNT': '1',
                         'Origin': 'https://www.febbox.com',
+                        'Pragma': 'no-cache',
                         'Priority': 'u=1, i',
                         'Referer': `https://www.febbox.com/share/${uniqueId}`,
                         'Sec-CH-UA': '"Google Chrome";v="129", "Not=A?Brand";v="8", "Chromium";v="129"',
