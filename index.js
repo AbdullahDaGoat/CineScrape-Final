@@ -353,9 +353,9 @@ async function fetchFileDetails(uniqueId) {
 
     try {
         // Navigate to the share info page using a random proxy
-        const proxy = getRandomProxy();
+        // const proxy = getRandomProxy();
         const url = `https://www.febbox.com/file/share_info?key=${uniqueId}`;
-        const proxiedUrl = `${proxy}?destination=${encodeURIComponent(url)}`;
+        // const proxiedUrl = `${proxy}?destination=${encodeURIComponent(url)}`;
         await page.goto(proxiedUrl, { waitUntil: 'networkidle0' });
 
         // Extract the data-id from the first file element
