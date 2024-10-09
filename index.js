@@ -6,9 +6,65 @@ const https = require('https');
 const express = require('express');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
-
+const crypto = require('crypto');
+const zlib = require('zlib');
 
 puppeteer.use(stealth());
+
+const proxies = {
+    "https://levrx-proxy2.netlify.app/": "44.219.53.183",
+    "https://proxy.snooproxy.com/": "54.84.236.175",
+    "https://torn-unicorn.fly.dev/": "66.241.125.132",
+    "https://grand-sherbet-43d0d0.netlify.app/": "54.84.236.175",
+    "http://129.153.48.23:3000/": "129.153.48.23",
+    "https://wonderful-pegasus-6ce77b.netlify.app/": "54.161.234.33",
+    "https://amazing-pothos-d4d717.netlify.app/": "44.219.53.183",
+    "http://130.61.170.99:3000/": "130.61.170.99",
+    "https://jolly-cheesecake-e28873.netlify.app/": "54.84.236.175",
+    "http://139.59.140.80:3000/": "139.59.140.80",
+    "https://classy-mousse-20507a.netlify.app/": "44.217.161.11",
+    "http://207.244.233.58:3000/": "207.244.233.58",
+    "https://simple-proxy-zeta.vercel.app/": "76.76.21.241",
+    "http://104.245.107.79:4001/": "104.245.107.79",
+    "https://amazing-scone-4e9d8f.netlify.app/": "54.161.234.33",
+    "http://162.255.87.125:3000/": "162.255.87.125",
+    "https://clinquant-paprenjak-f8a0b7.netlify.app/": "44.217.161.11",
+    "https://master--imaginative-kataifi-afc45b.netlify.app/": "54.161.234.33",
+    "https://astra-proxy.netlify.app/": "44.217.161.11",
+    "https://dev--inspiring-begonia-6d2cbd.netlify.app/": "3.237.50.161",
+    "https://mproxy.jawshoeadan.me/": "172.91.81.1",
+    "http://vmi1936704.contaboserver.net:3000/": "207.244.233.58",
+    "https://mellifluous-tanuki-fa701e.netlify.app/": "3.221.163.200",
+    "https://dainty-jalebi-2ca016.netlify.app/": "44.204.107.157",
+    "https://proxy.wafflehacker.io/": "66.241.125.132"
+  };
+
+// Encryption key for AES-256
+const ENCRYPTION_KEY = '7f8d4a5954419824ea70b60d25115a4a3ada34dd0af2f473ace6147ed4dfce6b'; // 32 bytes
+
+// Random proxy selection
+function getRandomProxy() {
+    const proxyUrls = Object.keys(proxies);
+    return proxyUrls[Math.floor(Math.random() * proxyUrls.length)];
+}
+
+// URL encryption and compression
+function compressAndEncrypt(text) {
+    const buffer = Buffer.from(text);
+    const compressed = zlib.deflateSync(buffer);
+    const iv = crypto.randomBytes(16);
+    const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY, 'hex'), iv);
+    let encrypted = cipher.update(compressed);
+    encrypted = Buffer.concat([encrypted, cipher.final()]);
+    return `${iv.toString('base64')}:${encrypted.toString('base64')}`;
+}
+
+function encryptUrl(url) {
+    url = url.replace(/&KEY3=[^&]*/g, '').replace(/&KEY4=[^&]*/g, '').replace(/&KEY5=[^&]*/g, '');
+    const compressedEncrypted = compressAndEncrypt(url);
+    const base64Encoded = Buffer.from(compressedEncrypted).toString('base64');
+    return `https://mp4.whvx.net/mp4/${base64Encoded}`;
+}
 
 // TMDB API key (replace with your key)
 const tmdbApiKey = '5b9790d9305dca8713b9a0afad42ea8d';
@@ -141,7 +197,10 @@ async function fetchFileDetails(uniqueId) {
 
     try {
         // Navigate to the share info page
-        await page.goto(`https://www.febbox.com/file/share_info?key=${uniqueId}`, { waitUntil: 'networkidle0' });
+        const proxy = getRandomProxy();
+        const url = `https://www.febbox.com/file/share_info?key=${uniqueId}`;
+        const proxiedUrl = `${proxy}?destination=${encodeURIComponent(url)}`;
+        await page.goto(proxiedUrl, { waitUntil: 'networkidle0' });
 
         // Extract the data-id from the first file element
         const fid = await page.evaluate(() => {
@@ -188,9 +247,11 @@ async function downloadFileWithPost(uniqueId, fid) {
         console.log('Setting cookies...');
         await page.setCookie(...cookies);
 
+        const proxy = getRandomProxy();
         const destinationUrl = `https://www.febbox.com/file/share_info?key=${uniqueId}`;
+        const proxiedDestinationUrl = `${proxy}?destination=${encodeURIComponent(destinationUrl)}`;
 
-        await page.goto(destinationUrl, { waitUntil: 'networkidle0' });
+        await page.goto(proxiedDestinationUrl, { waitUntil: 'networkidle0' });
 
         // Execute the POST request in the page context using page.evaluate
         console.log('Executing POST request...');
