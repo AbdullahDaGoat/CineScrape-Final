@@ -251,7 +251,7 @@ app.use(cors());
 app.use(limiter); // Apply rate limiter globally
 
 // Queue each request
-app.get('/:tmdbid', async (req, res) => {
+app.get('/movie/:tmdbid', async (req, res) => {
     const tmdbId = req.params.tmdbid;
 
     // Import p-queue dynamically within the route handler
