@@ -16,7 +16,32 @@ const cookieValue = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MjgzNjM2Nj
 
 const ENCRYPTION_KEY = '7f8d4a5954419824ea70b60d25115a4a3ada34dd0af2f473ace6147ed4dfce6b'; // Must be 256 bits (32 bytes)
 
-
+const proxies = {
+  "https://levrx-proxy2.netlify.app/": "44.219.53.183",
+  "https://proxy.snooproxy.com/": "54.84.236.175",
+  "https://torn-unicorn.fly.dev/": "66.241.125.132",
+  "https://grand-sherbet-43d0d0.netlify.app/": "54.84.236.175",
+  "http://129.153.48.23:3000/": "129.153.48.23",
+  "https://wonderful-pegasus-6ce77b.netlify.app/": "54.161.234.33",
+  "https://amazing-pothos-d4d717.netlify.app/": "44.219.53.183",
+  "http://130.61.170.99:3000/": "130.61.170.99",
+  "https://jolly-cheesecake-e28873.netlify.app/": "54.84.236.175",
+  "http://139.59.140.80:3000/": "139.59.140.80",
+  "https://classy-mousse-20507a.netlify.app/": "44.217.161.11",
+  "http://207.244.233.58:3000/": "207.244.233.58",
+  "https://simple-proxy-zeta.vercel.app/": "76.76.21.241",
+  "http://104.245.107.79:4001/": "104.245.107.79",
+  "https://amazing-scone-4e9d8f.netlify.app/": "54.161.234.33",
+  "http://162.255.87.125:3000/": "162.255.87.125",
+  "https://clinquant-paprenjak-f8a0b7.netlify.app/": "44.217.161.11",
+  "https://master--imaginative-kataifi-afc45b.netlify.app/": "54.161.234.33",
+  "https://astra-proxy.netlify.app/": "44.217.161.11",
+  "https://dev--inspiring-begonia-6d2cbd.netlify.app/": "3.237.50.161",
+  "https://mproxy.jawshoeadan.me/": "172.91.81.1",
+  "http://vmi1936704.contaboserver.net:3000/": "207.244.233.58",
+  "https://mellifluous-tanuki-fa701e.netlify.app/": "3.221.163.200",
+  "https://dainty-jalebi-2ca016.netlify.app/": "44.204.107.157"
+};
 
 function getRandomProxy() {
   const proxyUrls = Object.keys(proxies);
