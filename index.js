@@ -242,40 +242,6 @@ async function downloadFileWithPost(uniqueId, fid) {
         }
     }
 }
-
-function formatResponse(data) {
-    let responseJson = {
-        fileId: data.fileId,
-        videoSources: []
-    };
-
-    // Check if postResponse is a string and contains 'var sources ='
-    if (typeof data.postResponse === 'string' && data.postResponse.indexOf('var sources =') !== -1) {
-        let sourcesMatch = data.postResponse.match(/var sources = (\[.*?\]);/s);
-        if (sourcesMatch && sourcesMatch[1]) {
-            let sources;
-            try {
-                sources = JSON.parse(sourcesMatch[1]);
-                sources.forEach(source => {
-                    responseJson.videoSources.push({
-                        source: source.source,
-                        type: source.type,
-                        label: source.label,
-                        file: source.file
-                    });
-                });
-            } catch (e) {
-                console.error('Error parsing sources:', e);
-            }
-        }
-    } else {
-        console.error('postResponse is not a string or does not contain "var sources ="');
-        return data 
-    }
-
-    return responseJson; // Return the object instead of a string
-}
-
 const app = express();
 const port = process.env.PORT || 1000;
 app.use(cors());
@@ -304,13 +270,7 @@ app.get('/:tmdbid', async (req, res) => {
             console.log('File ID:', fid);
             const postResponse = await downloadFileWithPost(uniqueId, fid);
 
-            // Format the response
-            const formattedResponse = formatResponse({
-                fileId: fid,
-                postResponse: postResponse
-            });
-
-            res.json(formattedResponse);
+            res.json(postResponse);
         } catch (error) {
             console.error('Error in processing:', error.message);
             res.status(500).json({ error: error.message });
