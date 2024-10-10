@@ -159,34 +159,24 @@ async function fetchUniqueIdFromShareLink(tid) {
 
 // Function to fetch file details from Febbox
 async function fetchFileDetails(uniqueId) {
-    const browser = await puppeteer.launch({
-        headless: true,
-        executablePath: process.env.CHROME_BIN || null,
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
-    });
-    const page = await browser.newPage();
+    const url = `https://www.febbox.com/file/file_share_list?share_key=${uniqueId}`;
 
     try {
-        // Navigate to the share info page using a random proxy
-        const url = `https://www.febbox.com/file/share_info?key=${uniqueId}`;
-        await page.goto(url, { waitUntil: 'networkidle0' });
+        // Send a GET request to the Febbox API
+        const response = await axios.get(url);
+        const data = response.data;
 
-        // Extract the data-id from the first file element
-        const fid = await page.evaluate(() => {
-            const firstFileDiv = document.querySelector('div.file');
-            return firstFileDiv ? firstFileDiv.getAttribute('data-id') : null;
-        });
-
-        if (!fid) {
-            throw new Error('No file found with data-id attribute.');
+        // Check if the response is successful and contains file data
+        if (data && data.code === 1 && data.data && data.data.file_list && data.data.file_list.length > 0) {
+            // Extract the first file's fid
+            const fid = data.data.file_list[0].fid;
+            return fid;
+        } else {
+            throw new Error('No file found or API returned an unexpected response.');
         }
-
-        return fid; // Return the extracted data-id as the fid
     } catch (error) {
         console.error(`Error fetching file details: ${error.message}`);
         throw new Error('Failed to fetch file details.');
-    } finally {
-        await browser.close();
     }
 }
 
